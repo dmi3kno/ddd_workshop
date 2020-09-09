@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>Dynamic documents drilldown</title>
+    <meta charset="utf-8" />
+    <link href="libs/tile-view/tile-view.css" rel="stylesheet" />
+    <script src="libs/tile-view/tile-view.js"></script>
+    <link href="libs/animate.css/animate.xaringan.css" rel="stylesheet" />
+    <link href="libs/tachyons/tachyons.min.css" rel="stylesheet" />
+    <link href="libs/panelset/panelset.css" rel="stylesheet" />
+    <script src="libs/panelset/panelset.js"></script>
+    <script type="application/json" id="xaringanExtra-editable-docid">{"id":"dea1828e3581476b86e5317f18f5e629","expires":14}</script>
+    <script src="libs/himalaya/himalaya.js"></script>
+    <script src="libs/js-cookie/js.cookie.js"></script>
+    <link href="libs/editable/editable.css" rel="stylesheet" />
+    <script src="libs/editable/editable.js"></script>
+    <script src="libs/clipboard/clipboard.min.js"></script>
+    <link href="libs/shareon/shareon.min.css" rel="stylesheet" />
+    <script src="libs/shareon/shareon.min.js"></script>
+    <link href="libs/xaringanExtra-shareagain/shareagain.css" rel="stylesheet" />
+    <script src="libs/xaringanExtra-shareagain/shareagain.js"></script>
+    <link href="libs/xaringanExtra-extra-styles/xaringanExtra-extra-styles.css" rel="stylesheet" />
+    <link rel="stylesheet" href="xaringan-themer.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+
+
+class: title-slide, inverse, left, middle 
+
+background-image: url(fig/logobunch.png)
+background-position: right
+background-size: contain
+
+&lt;style type="text/css"&gt;
+.title-slide .remark-slide-number {
+  display: none;
+}
+&lt;/style&gt;
+
+
+
+<style>.shareagain-bar {
+--shareagain-foreground: rgb(255, 255, 255);
+--shareagain-background: rgba(0, 0, 0, 0.5);
+}</style><div>
+<style type="text/css">.xaringan-extra-logo {
+width: 110px;
+height: 128px;
+z-index: 0;
+background-image: url(fig/skaneR-logo.svg.png);
+background-size: contain;
+background-repeat: no-repeat;
+position: absolute;
+top:1em;right:1em;
+}
+</style>
+<script>(function () {
+  let tries = 0
+  function addLogo () {
+    if (typeof slideshow === 'undefined') {
+      tries += 1
+      if (tries < 10) {
+        setTimeout(addLogo, 100)
+      }
+    } else {
+      document.querySelectorAll('.remark-slide-content:not(.title-slide):not(.inverse):not(.hide_logo)')
+        .forEach(el => { el.innerHTML += '<a href="https://www.meetup.com/Skane-R-User-Group/" class="xaringan-extra-logo"></a>' })
+    }
+  }
+  document.addEventListener('DOMContentLoaded', addLogo)
+})()</script>
+</div>
+
+
+
+
+.huge[
+#Dynamic&lt;br&gt;documents&lt;br&gt;drilldown
+]
+&lt;br&gt;
+
+####Writing reproducible reports for fun and for profit
+&lt;br&gt;&lt;br&gt;
+.small[Dmytro Perepolkin | Lund University | 9 Sept 2020]
+
+---
+class: inverse, center, middle
+
+# What we will cover today
+
+---
+# Before the break
+
+.left-column[
+
+###Chunk options
+
+]
+.right-column[
+
+- get control over output, messages and figures
+
+- useful options for code execution
+
+]
+ 
+---
+# Before the break
+
+.left-column[
+
+###Chunk options
+### YAML and markdown
+
+]
+.right-column[
+
+- text, tables and math
+
+- common options for html, PDF and Word output
+
+- my bibliography proposal
+
+]
+
+---
+# After the break
+
+.left-column[
+
+###RMD orchestration
+
+]
+.right-column[
+
+- what is going on when you click **Knit**: pandoc, `\(\LaTeX\)` and JavaScript
+
+- reusing the byproducts. Parametrized reports.
+
+- how to integrate python, SQL, Stan, Graphviz, CSS etc. into your document
+
+]
+
+---
+
+# After the break
+
+.left-column[
+
+###RMD orchestration
+###Sharing on
+
+]
+.right-column[
+
+- write a book with `bookdown`
+
+- make a website with `blogdown`
+
+- present youself with `xaringan`
+
+]
+
+---
+# Method
+
+Take an Rmarkdown document, understand, modify, convert
+
+--
+
+Live-coding, hands-on, stop for exercises
+
+--
+
+The objective is to inspire and empower.
+
+&gt; *I went to this workshop and did it myself. Now I want to adopt it in my workflow (and I feel I know where to get started).*
+
+---
+class: inverse, center, middle
+# Lets get started!
+
+---
+#Meet the penguins
+
+&lt;img src="https://raw.githubusercontent.com/allisonhorst/palmerpenguins/master/man/figures/lter_penguins.png" height="400" style="display: block; margin: auto;" /&gt;
+
+.center[
+`install.packages("palmerpenguins")`
+
+and download `ddd_report.rmd` from `bit.ly/ddd_workshop` 🖱
+]
+
+---
+# Introduction to Rmarkdown
+.pull-left[
+Resources:
+- [Rstudio tutorial](https://rmarkdown.rstudio.com/lesson-1.html) 🖱
+- [R markdown cookbook](https://bookdown.org/yihui/rmarkdown-cookbook/) 🖱
+- [R markdown: The Definitive Guide](https://bookdown.org/yihui/rmarkdown/)
+- Rstudio [cheatsheet](https://raw.githubusercontent.com/rstudio/cheatsheets/master/rmarkdown-2.0.pdf) and [reference guide](https://rstudio.com/wp-content/uploads/2015/03/rmarkdown-reference.pdf)
+]
+.pull-right[
+&lt;img src="https://bookdown.org/yihui/rmarkdown-cookbook/images/cover.png" width="15%" /&gt;&lt;img src="https://bookdown.org/yihui/rmarkdown/images/cover.png" width="15%" /&gt;
+
+]
+
+&lt;img src="https://plain-text.co/figures/workflow-wide.png" height="300" /&gt;
+
+.footnote[
+[The plain person's guide to plain text social science](https://plain-text.co/pull-it-together.html) by Kieran Healy
+]
+
+---
+# Chunk options
+
+Rstudio tutorial. [Lessons 3-5](https://rmarkdown.rstudio.com/lesson-3.html) 🖱
+
+.bg-washed-green.b--dark-green.ba.bw2.br3.shadow-5.ph4.mt2[
+**TO DO:**
+1. What's the difference between `include` and `echo`? 
+
+1. See if you can get rid of warnings and errors in the chunk with a `ggplot`
+
+1. What's the meaning of `results` option? Why we `results="asis"` in one of the chunks?
+
+1. Describe the coefficients from regression in text using inline code.
+
+1. What is the difference between `out.width` and `fig.width` for plots/images?
+]
+
+Also note `fig.retina`
+---
+# Code execution
+
+The main switch is (the default) `eval=TRUE`. Also important `ref.label` and `child`
+
+You can store all chunks externally (in `.R` script). See [Winton Report](https://github.com/lu-unevil/WintonReport)
+
+1. Include this in the beginning of the document: `knitr::read_chunk('my_chunks.R')`
+
+1. Name your chunks in `.Rmd`! (it is a good habit anyways)
+
+1. Every codepiece in the `.R` script should have this "special comment" header: `## @knitr chunk_name_1`
+
+.bg-washed-green.b--dark-green.ba.bw2.br3.shadow-5.ph4.mt2[
+**TO DO:**
+1. What if I want to include all of my code as appendix? &lt;br&gt;(Psst! Use `ref.label=knitr::all_labels()` as in Cookbook 🥠 4.19)
+
+1. How can I include my external script into an Rmarkdown? (Psst! Look at the `child`)
+
+]
+
+---
+# Figures and images
+
+Tips for inserting images: 
+- [blogpost *by Zev Ross*](http://zevross.com/blog/2017/06/19/tips-and-tricks-for-working-with-images-and-figures-in-r-markdown-documents/)
+- The Cookbook 🥠 5.4 and 5.5
+
+.bg-washed-green.b--dark-green.ba.bw2.br3.shadow-5.ph4.mt2[
+**TO DO:**
+1. What's the advantage of inserting images via code (`knitr::include_graphics()`) vs with hyperlink `![](path\to\image.png)`. Psst! The size!
+
+1. Make two ggplots appear side by side. Psst!  `out.width` and `fig.show`
+
+]
+
+---
+class: inverse, center, middle
+
+# YAML and the markdown
+
+---
+# Text and tables
+
+Look through the reference/cheatsheet. My "aha moment" was
+&gt; *End a line with two spaces to start a new paragraph. *
+
+Basic tables are produced with `knitr::kable`. You almost always want to take it one step further.
+- [`kableExra`](https://haozhu233.github.io/kableExtra/) by Hao Zhu [&lt;svg style="height:0.8em;top:.04em;position:relative;" viewBox="0 0 512 512"&gt;&lt;path d="M459.37 151.716c.325 4.548.325 9.097.325 13.645 0 138.72-105.583 298.558-298.558 298.558-59.452 0-114.68-17.219-161.137-47.106 8.447.974 16.568 1.299 25.34 1.299 49.055 0 94.213-16.568 130.274-44.832-46.132-.975-84.792-31.188-98.112-72.772 6.498.974 12.995 1.624 19.818 1.624 9.421 0 18.843-1.3 27.614-3.573-48.081-9.747-84.143-51.98-84.143-102.985v-1.299c13.969 7.797 30.214 12.67 47.431 13.319-28.264-18.843-46.781-51.005-46.781-87.391 0-19.492 5.197-37.36 14.294-52.954 51.655 63.675 129.3 105.258 216.365 109.807-1.624-7.797-2.599-15.918-2.599-24.04 0-57.828 46.782-104.934 104.934-104.934 30.213 0 57.502 12.67 76.67 33.137 23.715-4.548 46.456-13.32 66.599-25.34-7.798 24.366-24.366 44.833-46.132 57.827 21.117-2.273 41.584-8.122 60.426-16.243-14.292 20.791-32.161 39.308-52.628 54.253z"/&gt;&lt;/svg&gt;](https://twitter.com/haozhu233)
+- [`gt`](https://gt.rstudio.com/) by Rstudio's Rich Iannone [&lt;svg style="height:0.8em;top:.04em;position:relative;" viewBox="0 0 512 512"&gt;&lt;path d="M459.37 151.716c.325 4.548.325 9.097.325 13.645 0 138.72-105.583 298.558-298.558 298.558-59.452 0-114.68-17.219-161.137-47.106 8.447.974 16.568 1.299 25.34 1.299 49.055 0 94.213-16.568 130.274-44.832-46.132-.975-84.792-31.188-98.112-72.772 6.498.974 12.995 1.624 19.818 1.624 9.421 0 18.843-1.3 27.614-3.573-48.081-9.747-84.143-51.98-84.143-102.985v-1.299c13.969 7.797 30.214 12.67 47.431 13.319-28.264-18.843-46.781-51.005-46.781-87.391 0-19.492 5.197-37.36 14.294-52.954 51.655 63.675 129.3 105.258 216.365 109.807-1.624-7.797-2.599-15.918-2.599-24.04 0-57.828 46.782-104.934 104.934-104.934 30.213 0 57.502 12.67 76.67 33.137 23.715-4.548 46.456-13.32 66.599-25.34-7.798 24.366-24.366 44.833-46.132 57.827 21.117-2.273 41.584-8.122 60.426-16.243-14.292 20.791-32.161 39.308-52.628 54.253z"/&gt;&lt;/svg&gt;](https://twitter.com/riannone)
+- and more. See Cookbook 🥠 10.x
+
+You can make tables "by hand" with pipe syntax (basic or aligned)... or just make a quick `tribble`. 😃
+
+.bg-washed-green.b--dark-green.ba.bw2.br3.shadow-5.ph4.mt2[
+**TO DO:**
+1. Output a data frame variable from a chunk. Now wrap it into `knitr::kable()`. 
+
+1. Play with `kableExtra` options. Modify the table in the document to use color.
+]
+
+---
+# Math
+
+Learn some `\(\LaTeX\)`, but really get comfortable with `MathJax`
+
+LaTeX:
+- Print this [Cheatsheet](https://wch.github.io/latexsheet/)
+
+MathJax:
+- Bookmark this [thread on StackOverflow](https://math.meta.stackexchange.com/questions/5020/mathjax-basic-tutorial-and-quick-reference)
+
+But sometimes you don't have to. "Steal with pride" or use someone else's code.
+
+.bg-washed-green.b--dark-green.ba.bw2.br3.shadow-5.ph4.mt2[
+**TO DO:**
+1. Replace the equations in the document with `equatiomatic::extract_eq`.&lt;br&gt; See Cookbook 🥠 4.13
+
+]
+---
+# YAML render options
+
+The output(s) of the `.Rmd` document are set in YAML under `output:`
+
+```yaml
+---
+title: My fancy report
+output:
+  pdf_document: default
+  word_document: default
+  html_document: default
+  odt_document: default
+---
+```
+Every type of output has its own set of options. Consult the cheatsheet/reference.
+
+For `html_document` notable (cool) options to [always] include are `toc`, `toc_float`, `theme`, `highlight`, `code_folding`, `code_download`. There's also `df_print: paged`, which is like barebone version of `DT::datatable()`.
+
+More tricks 
+- For `html_document` in Cookbook 🥠 7.x
+- For `latex_document` in Cookbook 🥠 6.x
+- For `word_document` in Cookbook 🥠 8.x
+
+---
+# Bibliography
+
+Include `bibliography:` as a top-level YAML option referencing the `.bib` (or other bibliograhy) file. This file can be composed manually or automatically.
+
+.bg-washed-green.b--dark-green.ba.bw2.br3.shadow-5.ph4.mt2[
+**TO DO:**
+1. Find and add the missing citation for Simpson's technical paper where he discussed the paradox. Include the reference. Fix the code, so your `.bib` file is not automatically overwritten.
+
+]
+
+I recommend using [Zotero](https://www.zotero.org/) for storing scientific papers and references, [Better Bibtex](https://retorque.re/zotero-better-bibtex/) for key management and API access. and [`rbbt`](https://github.com/paleolimbot/rbbt) for inserting references in R. Then you can do this magic:
+
+```yaml
+---
+title: "Zotero + Better BibTeX + RMarkdown using rbbt"
+output: html_document
+bibliography: "'r rbbt::bbt_write_bib('biblio.json', overwrite = TRUE)'"
+---
+```
+Demo
+---
+# Cross-referencing within the document
+
+Cross-referencing in basic `rmarkdown` is limited. 
+
+The output formats provided by `bookdown::html_document2` and `bookdown::pdf_document2` are much better prepared to reference your tables and figures. 
+
+See Cookbook 🥠 4.7
+
+.bg-washed-green.b--dark-green.ba.bw2.br3.shadow-5.ph4.mt2[
+**TO DO:**
+1. Convert document to `bookdown::html_document2` and properly reference a table, an equation and a figure.
+]
+
+---
+class: inverse, center, middle
+
+# Break
+
+---
+# Behind the scenes magic
+
+&lt;img src="https://plain-text.co/figures/workflow-wide.png" height="500" /&gt;
+---
+# Reusing the byproducts
+
+You can keep the `.md` and `.tex` files and use them for other (great) things.
+
+--- 
+# Engines
+
+.bg-washed-green.b--dark-green.ba.bw2.br3.shadow-5.ph4.mt2[
+**TO DO:**
+1. Add the reference to the Simpson's paper as a `cat` engine output. See Cookbook 🥠 15.6
+
+]
+---
+
+# Sharing on
+
+Sharing ideas in Alison Hill[&lt;svg style="height:0.8em;top:.04em;position:relative;" viewBox="0 0 512 512"&gt;&lt;path d="M459.37 151.716c.325 4.548.325 9.097.325 13.645 0 138.72-105.583 298.558-298.558 298.558-59.452 0-114.68-17.219-161.137-47.106 8.447.974 16.568 1.299 25.34 1.299 49.055 0 94.213-16.568 130.274-44.832-46.132-.975-84.792-31.188-98.112-72.772 6.498.974 12.995 1.624 19.818 1.624 9.421 0 18.843-1.3 27.614-3.573-48.081-9.747-84.143-51.98-84.143-102.985v-1.299c13.969 7.797 30.214 12.67 47.431 13.319-28.264-18.843-46.781-51.005-46.781-87.391 0-19.492 5.197-37.36 14.294-52.954 51.655 63.675 129.3 105.258 216.365 109.807-1.624-7.797-2.599-15.918-2.599-24.04 0-57.828 46.782-104.934 104.934-104.934 30.213 0 57.502 12.67 76.67 33.137 23.715-4.548 46.456-13.32 66.599-25.34-7.798 24.366-24.366 44.833-46.132 57.827 21.117-2.273 41.584-8.122 60.426-16.243-14.292 20.791-32.161 39.308-52.628 54.253z"/&gt;&lt;/svg&gt;](https://twitter.com/apreshill) and Desiree De Leon[&lt;svg style="height:0.8em;top:.04em;position:relative;" viewBox="0 0 512 512"&gt;&lt;path d="M459.37 151.716c.325 4.548.325 9.097.325 13.645 0 138.72-105.583 298.558-298.558 298.558-59.452 0-114.68-17.219-161.137-47.106 8.447.974 16.568 1.299 25.34 1.299 49.055 0 94.213-16.568 130.274-44.832-46.132-.975-84.792-31.188-98.112-72.772 6.498.974 12.995 1.624 19.818 1.624 9.421 0 18.843-1.3 27.614-3.573-48.081-9.747-84.143-51.98-84.143-102.985v-1.299c13.969 7.797 30.214 12.67 47.431 13.319-28.264-18.843-46.781-51.005-46.781-87.391 0-19.492 5.197-37.36 14.294-52.954 51.655 63.675 129.3 105.258 216.365 109.807-1.624-7.797-2.599-15.918-2.599-24.04 0-57.828 46.782-104.934 104.934-104.934 30.213 0 57.502 12.67 76.67 33.137 23.715-4.548 46.456-13.32 66.599-25.34-7.798 24.366-24.366 44.833-46.132 57.827 21.117-2.273 41.584-8.122 60.426-16.243-14.292 20.791-32.161 39.308-52.628 54.253z"/&gt;&lt;/svg&gt;](https://twitter.com/dcossyle) [presentation](https://rstudio-education.github.io/sharing-short-notice/)
+
+---
+# xaringan
+
+- `xaringan`
+- `chocolate` theme [presentation](https://yongfu.name/slides/xaringan/) by Yongfu Liao [&lt;svg style="height:0.8em;top:.04em;position:relative;" viewBox="0 0 512 512"&gt;&lt;path d="M459.37 151.716c.325 4.548.325 9.097.325 13.645 0 138.72-105.583 298.558-298.558 298.558-59.452 0-114.68-17.219-161.137-47.106 8.447.974 16.568 1.299 25.34 1.299 49.055 0 94.213-16.568 130.274-44.832-46.132-.975-84.792-31.188-98.112-72.772 6.498.974 12.995 1.624 19.818 1.624 9.421 0 18.843-1.3 27.614-3.573-48.081-9.747-84.143-51.98-84.143-102.985v-1.299c13.969 7.797 30.214 12.67 47.431 13.319-28.264-18.843-46.781-51.005-46.781-87.391 0-19.492 5.197-37.36 14.294-52.954 51.655 63.675 129.3 105.258 216.365 109.807-1.624-7.797-2.599-15.918-2.599-24.04 0-57.828 46.782-104.934 104.934-104.934 30.213 0 57.502 12.67 76.67 33.137 23.715-4.548 46.456-13.32 66.599-25.34-7.798 24.366-24.366 44.833-46.132 57.827 21.117-2.273 41.584-8.122 60.426-16.243-14.292 20.791-32.161 39.308-52.628 54.253z"/&gt;&lt;/svg&gt;](https://twitter.com/Yongfu1996)
+- `xaringanthemer` by Garrick Aden-Buie [&lt;svg style="height:0.8em;top:.04em;position:relative;" viewBox="0 0 512 512"&gt;&lt;path d="M459.37 151.716c.325 4.548.325 9.097.325 13.645 0 138.72-105.583 298.558-298.558 298.558-59.452 0-114.68-17.219-161.137-47.106 8.447.974 16.568 1.299 25.34 1.299 49.055 0 94.213-16.568 130.274-44.832-46.132-.975-84.792-31.188-98.112-72.772 6.498.974 12.995 1.624 19.818 1.624 9.421 0 18.843-1.3 27.614-3.573-48.081-9.747-84.143-51.98-84.143-102.985v-1.299c13.969 7.797 30.214 12.67 47.431 13.319-28.264-18.843-46.781-51.005-46.781-87.391 0-19.492 5.197-37.36 14.294-52.954 51.655 63.675 129.3 105.258 216.365 109.807-1.624-7.797-2.599-15.918-2.599-24.04 0-57.828 46.782-104.934 104.934-104.934 30.213 0 57.502 12.67 76.67 33.137 23.715-4.548 46.456-13.32 66.599-25.34-7.798 24.366-24.366 44.833-46.132 57.827 21.117-2.273 41.584-8.122 60.426-16.243-14.292 20.791-32.161 39.308-52.628 54.253z"/&gt;&lt;/svg&gt;](https://twitter.com/grrrck). See [blogpost](https://www.garrickadenbuie.com/blog/xaringanthemer-v0-3-0/) and [package documentation](https://pkg.garrickadenbuie.com/xaringanthemer/index.html)
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"ratio": "16:9",
+"highlightStyle": "github",
+"highlightLines": true,
+"countIncrementalSlides": false
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>

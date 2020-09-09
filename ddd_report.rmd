@@ -1,0 +1,189 @@
+---
+title: "Dynamic Document Drilldown Workshop"
+author: "Insert your name here"
+date: "04/09/2020"
+output: 
+  pdf_document: default
+  word_document: default
+  html_document: 
+    theme: flatly
+    toc: true
+    toc_float: true
+bibliography: references.bib
+always_allow_html: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::write_bib(c("knitr", "rmarkdown", "tidyverse", "palmerpenguins"), "references.bib")
+```
+
+# Introduction
+
+`penguins` dataset [@R-palmerpenguins] has got the following 7 columns and 344 observations. Of the 7 columns, 3 are categorical (species,island,sex) and the rest are numeric.
+
+```{r libraries, warning=FALSE, error=FALSE, message=FALSE}
+library(tidyverse)
+library(texreg)
+library(knitr)
+library(kableExtra)
+library(DBI)
+library(RSQLite)
+library(DT)
+library(palmerpenguins)
+```
+
+## First look at the data
+
+```{r}
+glimpse(penguins, width=70)
+```
+
+- **species** a factor denoting penguin species (Adélie, Chinstrap and Gentoo)
+
+- **island** a factor denoting island in Palmer Archipelago, Antarctica (Biscoe, Dream or Torgersen)
+
+- **bill_length_mm** a number denoting bill length (millimeters)
+
+- **bill_depth_mm** a number denoting bill depth (millimeters)
+
+- **flipper_length_mm** an integer denoting flipper length (millimeters)
+
+- **body_mass_g** an integer denoting body mass (grams)
+
+- **sex** a factor denoting penguin sex (female, male)
+
+## Producing a table
+
+```{r, echo=FALSE}
+peng_count_tbl <- penguins %>%
+  group_by(species, sex) %>% 
+  tally() %>% 
+  add_column(bodywt="")
+
+peng_wt_lst <- penguins %>% 
+  group_by(species, sex) %>% 
+  filter(!is.na(body_mass_g)) %>% 
+  group_split() %>% 
+  map(~pull(.x, body_mass_g))
+```
+
+The following table presents number of observations by species. As we can see the `r with(peng_count_tbl, species[which.min(n)])` is the least numerous of the species with only `r with(peng_count_tbl, min(n))` observations.
+
+```{r, echo=FALSE}
+options(knitr.kable.NA = 'unknown')
+peng_count_tbl %>% 
+  
+  knitr::kable(format="html",
+               caption = "Penguin count and weight by sex and species",
+               col.names = c("Species", "Sex", "N", "Body Weight")) %>% 
+  kableExtra::kable_paper(full_width=FALSE) %>% 
+  column_spec(4, image = spec_boxplot(peng_wt_lst)) %>% 
+  collapse_rows(columns = 1, valign = "top")
+  
+```
+
+# Simpson's paradox
+
+*Simpson's paradox* is a statistical phenomenon, where a trend observed in several groups diappears to reverses when the groups are combined^[See the [Wikipedia article](https://en.wikipedia.org/wiki/Simpson%27s_paradox)]. The paradox is named after Edward H. Simpson who described it in a technical paper in 1951 [citation is needed].
+
+The variable called `bill_depth_mm` is measuring the culmen, the upper ridge of the bird's bill, but for simplicity l depth of the penguins is the 
+
+```{r, echo=FALSE}
+knitr::include_graphics("https://raw.githubusercontent.com/allisonhorst/palmerpenguins/master/man/figures/culmen_depth.png")
+```
+
+Below is the plot that relates penguin body mass to bill depth.
+
+```{r}
+penguins %>% 
+  ggplot(aes(bill_depth_mm, body_mass_g))+
+  geom_point(aes(color=species))+
+  geom_smooth(method="lm", show.legend = FALSE)+
+  geom_smooth(aes(color=species), method="lm", show.legend = FALSE)+
+  scale_color_manual(values = c("darkorange","purple","cyan4")) +
+  labs(x="Bill depth (mm)", y="Body mass (g)", color=NULL)+
+  theme_minimal()
+
+```
+
+# Model of the body weight
+
+Flipper length is strongly associated with the body mass of penguins, as the following analysis will show.
+
+```{r, results='asis'}
+fl_bm_mod <- lm(body_mass_g ~ flipper_length_mm , data=penguins)
+
+tidy_fl_bm_mod <- broom::tidy(fl_bm_mod)
+glance_fl_bm_mod <- broom::glance(fl_bm_mod)
+
+texreg::htmlreg(fl_bm_mod,
+          custom.note = "OLS regressions with body_mass_g as the response variable.",
+          caption.above = TRUE,
+          # better for markdown
+          doctype = FALSE,
+          html.tag = FALSE,
+          head.tag = FALSE)
+
+```
+
+The (mathematically wrong) regression equation is 
+
+$$\hat y_i=\hat β_0+\hat β_1x_i+\varepsilon_i$$
+
+where $$\varepsilon∼N(0, \sigma^2)$$
+
+Therefore, substituting the values from the regression model, we get:
+
+$$\hat y_i=`r round(tidy_fl_bm_mod$estimate[1],2)`+`r round(tidy_fl_bm_mod$estimate[2],2)`x_i+\varepsilon_i$$
+
+where $$\varepsilon∼N(0, `r round(glance_fl_bm_mod$sigma[1], 2)`^2)$$
+
+# Joining data in SQL
+
+Let's create a small table of just three records that is going to store geographical coordinates of the islands. We will then create a new SQLite database and write both `penguins` and the new `islands` data as two tables into this database.
+
+```{r}
+islands <- tibble::tribble(
+  ~island, ~lat, ~lng,
+  "Dream", -64.733333, -64.233333,
+  "Torgersen", -64.766667, -64.083333,
+  "Biscoe", -65.433333, -65.5
+)
+
+db <- dbConnect(RSQLite::SQLite(), dbname = "penguins_sql.sqlite")
+DBI::dbWriteTable(db, "penguin_tbl", penguins, overwrite=TRUE)
+DBI::dbWriteTable(db, "islands_tbl", islands, overwrite=TRUE)
+```
+
+The following chunk is an SQL chunk. It will query both tables, perform a left join and return the joined table to us as a `penguins_joined` dataframe. Note that we did not use any R package to do it.
+
+```{sql connection=db, output.var="penguins_joined"}
+SELECT species, sex, lng, lat, body_mass_g  FROM penguin_tbl
+  LEFT JOIN islands_tbl ON 
+  islands_tbl.island == penguin_tbl.island
+```
+
+Here we can explore the joined dataset.
+
+```{r}
+DT::datatable(penguins_joined)
+```
+
+# Irrelevant Pie Chart
+
+There's only one permissible pie chart and it is the "pyramid pie chart" in R:
+
+```{r piechart, echo=FALSE}
+par(mar = c(0, 1, 0, 1))
+pie(
+  c(280, 60, 20),
+  c('Sky', 'Sunny side of pyramid', 'Shady side of pyramid'),
+  col = c('#0292D8', '#F7EA39', '#C4B632'),
+  init.angle = -50, border = NA
+)
+```
+
+Please, feel free to insert your favorite meme or comic here.
+
+# References
