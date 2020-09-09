@@ -2,5 +2,5 @@
 
 Lund, 09.09.2020
 
-- [Presentation]()
+- [Presentation](https://dmi3kno.github.io/ddd_workshop/slides.html)
 - [Rmd document]() to practice

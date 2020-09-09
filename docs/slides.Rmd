@@ -379,6 +379,10 @@ knitr::include_graphics("https://plain-text.co/figures/workflow-wide.png")
 
 You can keep the `.md` and `.tex` files and use them for other (great) things.
 
+```
+pandoc mydoc.tex --filter pandoc-crossref --bibliography=myref.bib --reference-docx=IEEE_template.doc -o mydoc.docx
+```
+
 --- 
 # Engines
 
