@@ -379,11 +379,13 @@ knitr::include_graphics("https://plain-text.co/figures/workflow-wide.png")
 
 You can keep the `.md` and `.tex` files and use them for other (great) things.
 
+```bash
+pandoc mydoc.tex --filter pandoc-crossref --bibliography=myref.bib  
+--reference-docx=IEEE_template.doc -o mydoc.docx
 ```
-pandoc mydoc.tex --filter pandoc-crossref --bibliography=myref.bib --reference-docx=IEEE_template.doc -o mydoc.docx
-```
+The `.tex` file can be later used for converting into Word
 
---- 
+---
 # Engines
 
 .bg-washed-green.b--dark-green.ba.bw2.br3.shadow-5.ph4.mt2[

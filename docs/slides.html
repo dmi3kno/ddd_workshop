@@ -9,7 +9,7 @@
     <link href="libs/tachyons/tachyons.min.css" rel="stylesheet" />
     <link href="libs/panelset/panelset.css" rel="stylesheet" />
     <script src="libs/panelset/panelset.js"></script>
-    <script type="application/json" id="xaringanExtra-editable-docid">{"id":"dea1828e3581476b86e5317f18f5e629","expires":14}</script>
+    <script type="application/json" id="xaringanExtra-editable-docid">{"id":"x27e7724846c48b5bbcb1b1d3aa0ecff","expires":14}</script>
     <script src="libs/himalaya/himalaya.js"></script>
     <script src="libs/js-cookie/js.cookie.js"></script>
     <link href="libs/editable/editable.css" rel="stylesheet" />
@@ -383,7 +383,13 @@ class: inverse, center, middle
 
 You can keep the `.md` and `.tex` files and use them for other (great) things.
 
---- 
+```bash
+pandoc mydoc.tex --filter pandoc-crossref --bibliography=myref.bib  
+--reference-docx=IEEE_template.doc -o mydoc.docx
+```
+The `.tex` file can be later used for converting into Word
+
+---
 # Engines
 
 .bg-washed-green.b--dark-green.ba.bw2.br3.shadow-5.ph4.mt2[
